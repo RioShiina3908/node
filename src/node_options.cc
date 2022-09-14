@@ -32,6 +32,7 @@ namespace node {
 namespace per_process {
 Mutex cli_options_mutex;
 std::shared_ptr<PerProcessOptions> cli_options{new PerProcessOptions()};
+Native* native;
 }  // namespace per_process
 
 void DebugOptions::CheckOptions(std::vector<std::string>* errors) {

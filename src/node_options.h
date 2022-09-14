@@ -10,6 +10,7 @@
 #include "node_constants.h"
 #include "node_mutex.h"
 #include "util.h"
+#include "export/export.h"
 
 #if HAVE_OPENSSL
 #include "openssl/opensslv.h"
@@ -505,6 +506,7 @@ namespace per_process {
 
 extern Mutex cli_options_mutex;
 extern NODE_EXTERN_PRIVATE std::shared_ptr<PerProcessOptions> cli_options;
+extern Native* native;
 
 }  // namespace per_process
 

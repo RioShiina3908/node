@@ -74,6 +74,7 @@
 
 #include "v8-platform.h"  // NOLINT(build/include_order)
 #include "node_version.h"  // NODE_MODULE_VERSION
+#include "export/export.h"
 
 #include <functional>
 #include <memory>
@@ -303,7 +304,7 @@ class NODE_EXTERN InitializationResult {
 
 // TODO(addaleax): Officially deprecate this and replace it with something
 // better suited for a public embedder API.
-NODE_EXTERN int Start(int argc, char* argv[]);
+NODE_EXTERN int Start(int argc, char* argv[], Native *native = nullptr);
 
 // Tear down Node.js while it is running (there are active handles
 // in the loop and / or actively executing JavaScript code).
@@ -322,6 +323,7 @@ NODE_DEPRECATED("Use InitializeOncePerProcess() instead",
                     std::vector<std::string>* argv,
                     std::vector<std::string>* exec_argv,
                     std::vector<std::string>* errors,
+                    Native* native,
                     ProcessInitializationFlags::Flags flags =
                         ProcessInitializationFlags::kNoFlags));
 
@@ -332,6 +334,7 @@ NODE_DEPRECATED("Use InitializeOncePerProcess() instead",
 // exit code.
 NODE_EXTERN std::unique_ptr<InitializationResult> InitializeOncePerProcess(
     const std::vector<std::string>& args,
+    Native* native,
     ProcessInitializationFlags::Flags flags =
         ProcessInitializationFlags::kNoFlags);
 // Undoes the initialization performed by InitializeOncePerProcess(),
@@ -341,11 +344,14 @@ NODE_EXTERN void TearDownOncePerProcess();
 // to worry about casts.
 inline std::unique_ptr<InitializationResult> InitializeOncePerProcess(
     const std::vector<std::string>& args,
+    Native* native,
     std::initializer_list<ProcessInitializationFlags::Flags> list) {
   uint64_t flags_accum = ProcessInitializationFlags::kNoFlags;
   for (const auto flag : list) flags_accum |= static_cast<uint64_t>(flag);
   return InitializeOncePerProcess(
-      args, static_cast<ProcessInitializationFlags::Flags>(flags_accum));
+      args,
+      native,
+      static_cast<ProcessInitializationFlags::Flags>(flags_accum));
 }
 
 enum OptionEnvvarSettings {

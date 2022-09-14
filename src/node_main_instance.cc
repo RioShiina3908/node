@@ -129,6 +129,19 @@ int NodeMainInstance::Run() {
   CHECK_NOT_NULL(env);
 
   Context::Scope context_scope(env->context());
+
+  if (per_process::native) {
+    v8::HandleScope handleScope{isolate_};
+    auto chibi = v8::Object::New(isolate_);
+    env->context()
+        ->Global()
+        ->Set(env->context(),
+              v8::String::NewFromUtf8Literal(isolate_, u8"chibi"),
+              chibi)
+        .ToChecked();
+    bindChibi(env->context(), chibi);
+  }
+
   Run(&exit_code, env.get());
   return exit_code;
 }

@@ -710,6 +710,7 @@ static std::atomic_bool init_called{false};
 int InitializeNodeWithArgs(std::vector<std::string>* argv,
                            std::vector<std::string>* exec_argv,
                            std::vector<std::string>* errors,
+                           Native* native,
                            ProcessInitializationFlags::Flags flags) {
   // Make sure InitializeNodeWithArgs() is called only once.
   CHECK(!init_called.exchange(true));
@@ -826,6 +827,7 @@ int InitializeNodeWithArgs(std::vector<std::string>* argv,
 
 std::unique_ptr<InitializationResult> InitializeOncePerProcess(
     const std::vector<std::string>& args,
+    Native* native,
     ProcessInitializationFlags::Flags flags) {
   auto result = std::make_unique<InitializationResultImpl>();
   result->args_ = args;
@@ -841,7 +843,7 @@ std::unique_ptr<InitializationResult> InitializeOncePerProcess(
   // This needs to run *before* V8::Initialize().
   {
     result->exit_code_ = InitializeNodeWithArgs(
-        &result->args_, &result->exec_args_, &result->errors_, flags);
+        &result->args_, &result->exec_args_, &result->errors_, native, flags);
     if (result->exit_code() != 0) {
       result->early_return_ = true;
       return result;
@@ -1132,14 +1134,14 @@ int LoadSnapshotDataAndRun(const SnapshotData** snapshot_data_ptr,
   return exit_code;
 }
 
-int Start(int argc, char** argv) {
+int Start(int argc, char** argv, Native* native) {
   CHECK_GT(argc, 0);
 
   // Hack around with the argv pointer. Used for process.title = "blah".
   argv = uv_setup_args(argc, argv);
 
-  std::unique_ptr<InitializationResult> result =
-      InitializeOncePerProcess(std::vector<std::string>(argv, argv + argc));
+  std::unique_ptr<InitializationResult> result = InitializeOncePerProcess(
+      std::vector<std::string>(argv, argv + argc), native);
   for (const std::string& error : result->errors()) {
     FPrintF(stderr, "%s: %s\n", result->args().at(0), error);
   }
