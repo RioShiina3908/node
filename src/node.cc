@@ -731,6 +731,8 @@ int InitializeNodeWithArgs(std::vector<std::string>* argv,
   // used in diagnostic reports.
   per_process::cli_options->cmdline = *argv;
 
+  per_process::native = native;
+
 #if defined(NODE_V8_OPTIONS)
   // Should come before the call to V8::SetFlagsFromCommandLine()
   // so the user can disable a flag --foo at run-time by passing
